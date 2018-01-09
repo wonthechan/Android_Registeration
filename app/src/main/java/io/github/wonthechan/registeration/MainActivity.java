@@ -6,10 +6,12 @@ import android.net.sip.SipSession;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -36,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         noticeListView = (ListView) findViewById(R.id.noticeListView);
         noticeList = new ArrayList<Notice>();
         adapter = new NoticeListAdapter(getApplicationContext(), noticeList); // 어댑터에 위에서 작성한 noticeList가 차레대로 들어가게 된다. (매칭)
-        noticeListView.setAdapter(adapter); // 어댑터에 들어가있는 모든 내용들이 각각의 view 형태로 리스트뷰에 보여진다.
+        //noticeListView.setAdapter(adapter); // 어댑터에 들어가있는 모든 내용들이 각각의 view 형태로 리스트뷰에 보여진다.
 
         final Button courseButton = (Button) findViewById(R.id.courseButton);
         final Button statisticsButton = (Button) findViewById(R.id.statisticsButton);
@@ -140,9 +142,24 @@ public class MainActivity extends AppCompatActivity {
                     noticeList.add(notice);
                     count++;
                 }
+                noticeListView.setAdapter(adapter); // 어댑터에 들어가있는 모든 내용들이 각각의 view 형태로 리스트뷰에 보여진다.
             } catch(Exception e){
                 e.printStackTrace();
             }
         }
+    }
+
+    private long lastTimeBackPressed;
+
+    @Override
+    public void onBackPressed(){
+        // Main 화면에서 뒤로가기 버튼을 한번 누른 후 1.5초 이내로 또 버튼을 누르면 종료한다.
+        if(System.currentTimeMillis() - lastTimeBackPressed < 1500)
+        {
+            finish();
+            return;
+        }
+        Toast.makeText(this, "'뒤로' 버튼을 한 번 더 눌러 종료합니다.", Toast.LENGTH_SHORT);
+        lastTimeBackPressed = System.currentTimeMillis(); // 버튼을 처음 한번 눌렀을때의 시간을 저장
     }
 }

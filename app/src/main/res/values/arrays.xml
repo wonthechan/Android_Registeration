@@ -128,4 +128,31 @@
         <item>화학과</item>
         <item>환경학과</item>
     </string-array>
+    <string-array name="year">
+        <item>2018년도</item>
+        <item>2017년도</item>
+        <item>2016년도</item>
+        <item>2015년도</item>
+        <item>2014년도</item>
+        <item>2013년도</item>
+        <item>2012년도</item>
+        <item>2011년도</item>
+        <item>2010년도</item>
+        <item>2009년도</item>
+        <item>2008년도</item>
+    </string-array>
+    <string-array name="term">
+        <item>1학기</item>
+        <item>여름학기</item>
+        <item>2학기</item>
+        <item>겨울학기</item>
+    </string-array>
+    <string-array name="graduateArea">
+        <item>대학원 전공/부전공</item>
+        <item>실용외국어/교양과목</item>
+    </string-array>
+    <string-array name="universityArea">
+        <item>전공/부전공</item>
+        <item>실용외국어/교양과목</item>
+    </string-array>
 </resources>
