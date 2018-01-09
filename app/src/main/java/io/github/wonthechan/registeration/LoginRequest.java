@@ -10,20 +10,16 @@ import java.util.Map;
  * Created by YeChan on 2018-01-09.
  */
 
-public class RegisterRequest extends StringRequest{
+public class LoginRequest extends StringRequest{
 
-    final static private String URL = "http://211.252.53.222/UserRegister.php";
+    final static private String URL = "http://211.252.53.222/UserLogin.php";
     private Map<String, String> parameters;
 
-    public RegisterRequest(String userID, String userPassword, String userGender, String userCampus, String userMajor, String userEmail, Response.Listener<String> listener){
+    public LoginRequest(String userID, String userPassword, Response.Listener<String> listener){
         super(Method.POST, URL, listener, null);
         parameters = new HashMap<>();
         parameters.put("userID", userID);
         parameters.put("userPassword", userPassword);
-        parameters.put("userGender", userGender);
-        parameters.put("userCampus", userCampus);
-        parameters.put("userMajor", userMajor);
-        parameters.put("userEmail", userEmail);
     }
 
     @Override

@@ -24,6 +24,7 @@ public class RegisterActivity extends AppCompatActivity {
     private String userID;
     private String userPassword;
     private String userGender;
+    private String userCampus;
     private String userMajor;
     private String userEmail;
     private AlertDialog dialog;
@@ -37,13 +38,20 @@ public class RegisterActivity extends AppCompatActivity {
         adapter = ArrayAdapter.createFromResource(this, R.array.major_seoul, android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
 
+        // EditText 변수화
         final EditText idText = (EditText) findViewById(R.id.idText);
         final EditText passwordText = (EditText) findViewById(R.id.passwordText);
         final EditText emailText = (EditText) findViewById(R.id.emailText);
 
+        // radioButton 변수화 (gender)
         RadioGroup genderGroup = (RadioGroup) findViewById(R.id.genderGroup);
         int genderGroupID = genderGroup.getCheckedRadioButtonId();
         userGender = ((RadioButton) findViewById(genderGroupID)).getText().toString();
+
+        // radioButton 변수화 (campus)
+        RadioGroup campusGroup = (RadioGroup) findViewById(R.id.campusGroup);
+        int campusGroupID = campusGroup.getCheckedRadioButtonId();
+        userCampus = ((RadioButton) findViewById(campusGroupID)).getText().toString();
 
         genderGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -52,6 +60,26 @@ public class RegisterActivity extends AppCompatActivity {
                 userGender = genderButton.getText().toString(); // RadioButton은 따로 빼서 변수로 저장한다.
             }
         });
+        // 캠퍼스에 따라 보여지는 major spinner 가 달라짐
+        campusGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                RadioButton campusButton = (RadioButton) findViewById(i);
+                userCampus = campusButton.getText().toString(); // RadioButton은 따로 빼서 변수로 저장한다.
+
+                if(userCampus.equals("글로벌캠퍼스"))
+                {
+                    adapter = ArrayAdapter.createFromResource(RegisterActivity.this, R.array.major_global, android.R.layout.simple_spinner_dropdown_item);
+                    spinner.setAdapter(adapter);
+                }
+                else
+                {
+                    adapter = ArrayAdapter.createFromResource(RegisterActivity.this, R.array.major_seoul, android.R.layout.simple_spinner_dropdown_item);
+                    spinner.setAdapter(adapter);
+                }
+            }
+        });
+
         // ID 중복체크 확인 버튼 기능 구현
         final Button validateButton = (Button) findViewById(R.id.validateButton);
         validateButton.setOnClickListener(new View.OnClickListener() {
@@ -176,7 +204,7 @@ public class RegisterActivity extends AppCompatActivity {
                         }
                     }
                 };
-                RegisterRequest registerRequest = new RegisterRequest(userID, userPassword, userGender, userMajor, userEmail, responseListener);
+                RegisterRequest registerRequest = new RegisterRequest(userID, userPassword, userGender, userCampus, userMajor, userEmail, responseListener);
                 RequestQueue queue = Volley.newRequestQueue(RegisterActivity.this);
                 queue.add(registerRequest);
             }
