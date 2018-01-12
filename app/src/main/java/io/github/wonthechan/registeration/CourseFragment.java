@@ -2,17 +2,30 @@ package io.github.wonthechan.registeration;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**
@@ -23,7 +36,7 @@ import java.lang.reflect.Array;
  * Use the {@link CourseFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class CourseFragment extends Fragment {
+public class CourseFragment extends Fragment implements AdapterView.OnItemSelectedListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -72,49 +85,233 @@ public class CourseFragment extends Fragment {
     private Spinner termSpinner;
     private ArrayAdapter areaAdapter;
     private Spinner areaSpinner;
+    private ArrayAdapter studiesAdapter;
+    private Spinner studiesSpinner;
 
-    private String courseUniversity = "";
+    private String campusGubun = "";
+    private String studiesGubun = "";
     private String courseYear = "";
-    private String courseTerm = "";
-    private String courseArea = "";
+
+    // tab_lang=K&type=&ag_ledg_year=2017&ag_ledg_sessn=1&ag_org_sect=T&gubun=1
+
+    // tab_lang=K&type=&ag_ledg_year=2018&ag_ledg_sessn=1&ag_org_sect=A&campus_sect=H2&gubun=1
+
+    // tab_lang=K&type=&ag_ledg_year=2018&ag_ledg_sessn=1&ag_org_sect=A&campus_sect=H1&gubun=1&ag_crs_strct_cd=AAR01_H1&ag_compt_fld_cd=301_H1
+
+    private String paramYear = "2018";
+    private String paramTerm = "1"; // 1부터 시작하며 1학기, 여름계절학기, 2학기, 겨울계절학기 순
+    private char paramOrgSect = 'A';
+    private String paramCamSect = "H1"; // H1 은 서울캠퍼스, H2 는 글로벌 캠퍼스
+    private char paramGubun = '1'; // 1은 전공/부전공, 2는 교양 영역
+    private String paramStudies = "";
+
+    final char[] orgSectList = {'A','B','D','E','G','H','I','J','L','M','T'}; // 학부, 대학원 코드 리스트
+    final ArrayList<String> majorList = new ArrayList<>(); // 전공 과목 리스트
+    final ArrayList<String> notMajorList = new ArrayList<>(); // 교양 과목 리스트
+
+    final ArrayList<String> paramMajorList = new ArrayList<>();
+    final ArrayList<String> paramNotMajorList = new ArrayList<>();
+
+    final ArrayList<String> codeStudiesList = new ArrayList<>();
+
+    private ListView courseListView;
+    private CourseListAdapter courseListAdapter;
+    private List<Course> courseLIst;
+
+
+    RadioGroup campusGroup;
+    RadioGroup studiesGroup;
+    RadioButton seoulRButton;
+    RadioButton globalRButton;
+    RadioButton majorRButton;
+    RadioButton cultRButton;
+
+    Button searchButton;
 
     @Override
     public void onActivityCreated(Bundle b){
         super.onActivityCreated(b);
 
-        final RadioGroup courseUniversityGroup = (RadioGroup) getView().findViewById(R.id.courseUniversityGroup);
+        new BackgroundParseTask().execute(1);
+
+        campusGroup = (RadioGroup) getView().findViewById(R.id.campusGroup);
+        studiesGroup = (RadioGroup) getView().findViewById(R.id.studiesGroup);
+        seoulRButton = (RadioButton) getView().findViewById(R.id.seoulRButton);
+
         yearSpinner = (Spinner) getView().findViewById(R.id.yearSpinner);
         termSpinner = (Spinner) getView().findViewById(R.id.termSpinner);
-        areaSpinner = (Spinner) getView().findViewById(R.id.areaSpinner);
+        areaSpinner = (Spinner) getView().findViewById(R.id.areaSpinner); // 학부,대학원
+        studiesSpinner = (Spinner) getView().findViewById(R.id.studiesSpinner);
 
-        courseUniversityGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        searchButton = (Button) getView().findViewById(R.id.searchButton);
+
+        // 초기화면 기본 스피너 어댑터 설정
+        // year 스피너
+        yearAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.year, android.R.layout.simple_spinner_dropdown_item);
+        yearSpinner.setAdapter(yearAdapter);
+
+        // term 스피너
+        termAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.univTerm, android.R.layout.simple_spinner_dropdown_item);
+        termSpinner.setAdapter(termAdapter);
+        // area 스피너
+        areaAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.affiliation, android.R.layout.simple_spinner_dropdown_item);
+        areaSpinner.setAdapter(areaAdapter);
+
+        //yearSpinner.setAdapter(termAdapter);
+
+        // 기본적으로 4개의 스피너에 대하여 리스너를 달아준다.
+        yearSpinner.setOnItemSelectedListener(this);
+        termSpinner.setOnItemSelectedListener(this);
+        areaSpinner.setOnItemSelectedListener(this);
+        studiesSpinner.setOnItemSelectedListener(this);
+
+        campusGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                RadioButton courseButton = (RadioButton) getView().findViewById(i);
-                courseUniversity = courseButton.getText().toString();
+                RadioButton campusButton = (RadioButton) getView().findViewById(i);
+                campusGubun = campusButton.getText().toString();
 
-                // yearAdapter 와 arrays에서 작성해놓은 연도 배열들을 매칭한다.
-                yearAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.year, android.R.layout.simple_spinner_dropdown_item);
-                yearSpinner.setAdapter(yearAdapter);
-
-                termAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.term, android.R.layout.simple_spinner_dropdown_item);
-                termSpinner.setAdapter(termAdapter);
-
-                // 학부 인지 대학원인지에 따라 달라지는 부분
-                if(courseUniversity.equals("학부"))
+                // 캠퍼스 구분에 따라 달라지는 부분
+                if(campusGubun.equals("서울"))
                 {
-                    areaAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.universityArea, android.R.layout.simple_spinner_dropdown_item);
-                    areaSpinner.setAdapter(areaAdapter);
+                    paramCamSect = "H1";
+                    new BackgroundParseTask().execute(1);
                 }
-                else if(courseUniversity.equals("대학원"))
+                else if(campusGubun.equals("글로벌"))
                 {
-                    areaAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.graduateArea, android.R.layout.simple_spinner_dropdown_item);
-                    areaSpinner.setAdapter(areaAdapter);
+                    paramCamSect = "H2";
+                    new BackgroundParseTask().execute(1);
                 }
-
             }
         });
 
+        studiesGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                RadioButton studiesButton = (RadioButton) getView().findViewById(i);
+                studiesGubun = studiesButton.getText().toString();
+
+                // 캠퍼스 구분에 따라 달라지는 부분
+                if(studiesGubun.equals("전공/부전공"))
+                {
+                    paramGubun = '1';
+                    // 전공으로 교체
+                    studiesAdapter = new ArrayAdapter<String>(getActivity(), R.layout.support_simple_spinner_dropdown_item, majorList);
+                    studiesSpinner.setAdapter(studiesAdapter);
+                }
+                else if(studiesGubun.equals("실용외국어/교양과목"))
+                {
+                    paramGubun = '2';
+                    // 교양으로 교체
+                    studiesAdapter = new ArrayAdapter<String>(getActivity(), R.layout.support_simple_spinner_dropdown_item, notMajorList);
+                    studiesSpinner.setAdapter(studiesAdapter);
+                }
+            }
+        });
+
+        courseListView = (ListView) getView().findViewById(R.id.courseListView);
+        courseLIst = new ArrayList<Course>();
+        courseListAdapter = new CourseListAdapter(getContext().getApplicationContext(), courseLIst);
+        courseListView.setAdapter(courseListAdapter);
+
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if(paramGubun == '1')
+                {
+                    new BackgroundParseTask().execute(2);
+                }
+                else
+                {
+                    new BackgroundParseTask().execute(3);
+                }
+            }
+        });
+
+    }
+    // 다중 스피너 리스너 구현 (switch)
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+        Spinner spinner = (Spinner) parent;
+        switch (spinner.getId()){
+            case R.id.yearSpinner:
+            {
+                courseYear = yearSpinner.getSelectedItem().toString().substring(0,4); // 뒤에 붙은 "년도" 떼어내기
+                if(!courseYear.equals(paramYear))
+                {
+                    paramYear = courseYear;
+                    new BackgroundParseTask().execute(1);
+                }
+                break;
+            }
+            case R.id.termSpinner:
+            {
+                if(!(""+(termSpinner.getSelectedItemPosition()+1)).equals(paramTerm))
+                {
+                    paramTerm = "" + (termSpinner.getSelectedItemPosition()+1);
+                    new BackgroundParseTask().execute(1);
+                }
+                break;
+            }
+            case R.id.areaSpinner:
+            {
+                // 이 스피너 값이 바뀔때에는 secOrg가 다시 파싱되서는 안된다. 기존 선택값이 초기화 되기 때문..
+                // 따라서 이곳에서 스레드를 실행시킬때는 areaSpinner를 업데이트하지않도록 주의 한다
+                int areaPos = areaSpinner.getSelectedItemPosition();
+                if(paramOrgSect != orgSectList[areaPos])
+                {
+                    paramOrgSect = orgSectList[areaPos];
+                    if(paramOrgSect != 'A')
+                    {
+                        campusGroup.check(R.id.seoulRButton);
+                        studiesGroup.check(R.id.majorRButton);
+                        switchEnabled(false);
+                        // 학부가 아니면 계절학기가 없으므로 term 스피너 업데이트.
+                        termAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.gradTerm, android.R.layout.simple_spinner_dropdown_item);
+                        termSpinner.setAdapter(termAdapter);
+                    }
+                    else
+                    {
+                        switchEnabled(true);
+                        // 원상태로 복귀
+                        termAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.univTerm, android.R.layout.simple_spinner_dropdown_item);
+                        termSpinner.setAdapter(termAdapter);
+                    }
+                    new BackgroundParseTask().execute(1);
+                }
+                break;
+            }
+            case R.id.studiesSpinner:
+            {
+                if(paramGubun == '1')
+                {
+                    paramStudies = paramMajorList.get(studiesSpinner.getSelectedItemPosition());
+                }
+                else
+                {
+                    paramStudies = paramNotMajorList.get(studiesSpinner.getSelectedItemPosition());
+                }
+                Log.e("TAG", "paramStudies 값은 => " + paramStudies);
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
+    }
+
+    // Switch isEnabled() for RadioGroup
+    public void switchEnabled(Boolean b){
+        campusGroup.setEnabled(b);
+        for (int i = 0; i < campusGroup.getChildCount(); i++) {
+            campusGroup.getChildAt(i).setEnabled(b);
+        }
+        for (int i = 0; i < studiesGroup.getChildCount(); i++) {
+            studiesGroup.getChildAt(i).setEnabled(b);
+        }
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -136,6 +333,7 @@ public class CourseFragment extends Fragment {
         mListener = null;
     }
 
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -149,5 +347,228 @@ public class CourseFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    // 서브클래스 작성
+    class BackgroundParseTask extends AsyncTask<Integer, Integer, Integer>{
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Integer doInBackground(Integer... integers) {
+            // 백그라운드 작업이 진행되는 곳.
+            try{
+                Log.e("TAG", "BackgroundParseTask @ doInBackground started");
+                switch (integers[0])
+                {
+                    case 1:
+                    {
+                        // case 1은 메뉴 파싱
+                        // 리스트 초기화
+                        majorList.clear();
+                        paramMajorList.clear();
+                        notMajorList.clear();
+                        paramNotMajorList.clear();
+
+                        // tab_lang=K&type=&ag_ledg_year=2018&ag_ledg_sessn=1&ag_org_sect=A&campus_sect=H2&gubun=1
+                        String parameter = "?tab_lang=K"+"&type=&ag_ledg_year="+paramYear+"&ag_ledg_sessn="+paramTerm+"&ag_org_sect="+paramOrgSect+"&campus_sect="+paramCamSect+"&gubun="+paramGubun;
+                        String URL = "http://wis.hufs.ac.kr:8989/src08/jsp/lecture/LECTURE2020L.jsp";
+                        Document sampleDoc = Jsoup.connect(URL+parameter).get();
+
+                        Elements elementsMajor = sampleDoc.select(".selectBox").select("[name=ag_crs_strct_cd]").select("option"); // 전공 파싱
+                        Elements elementsNotMajor = sampleDoc.select(".selectBox").select("[name=ag_compt_fld_cd]").select("option"); // 교양 파싱
+
+                        for(Element e: elementsMajor){
+                            majorList.add(e.text());
+                            paramMajorList.add(e.attr("value"));
+                        }
+
+                        for(Element e: elementsNotMajor){
+                            notMajorList.add(e.text());
+                            paramNotMajorList.add(e.attr("value"));
+                        }
+                        break;
+                    }
+                    case 2:
+                    {
+                        Log.e("TAG", "case 2 시작됨");
+                        // case 2는 검색 버튼을 누르고 강의정보를 파싱 : 전공 선택
+                        // 리스트 초기화
+                        courseLIst.clear();
+                        // test data
+                        //String test = "#23dwf(sdfsf)";
+                        Log.e("TAG", "1");
+                        // tab_lang=K&type=&ag_ledg_year=2018&ag_ledg_sessn=1&ag_org_sect=A&campus_sect=H1&gubun=1&ag_crs_strct_cd=AAR01_H1    ..전공선택시
+                        String parameter = "?tab_lang=K"+"&type=&ag_ledg_year="+paramYear+"&ag_ledg_sessn="+paramTerm+"&ag_org_sect="+paramOrgSect+"&campus_sect="+paramCamSect+"&gubun="+paramGubun+"&ag_crs_strct_cd="+paramStudies;
+                        String URL = "http://wis.hufs.ac.kr:8989/src08/jsp/lecture/LECTURE2020L.jsp";
+                        Document sampleDoc = Jsoup.connect(URL+parameter).get();
+                        Log.e("TAG", "2");
+                        Elements elementsLecture = sampleDoc.select("[id=premier1]").select("tbody tr"); // 강의s 파싱
+                        Elements elementsAttrLecture; // 강의의 세부 <td> 속성들 파싱
+                        Log.e("TAG", "3");
+                        //ArrayList<ArrayList<String>> elemList = new ArrayList<>();
+                        ArrayList<String> elemList = new ArrayList<>();
+                        Log.e("TAG", "4");
+                        Log.e("TAG", "elementsLecture size값은 : " + elementsLecture.size());
+
+
+                        String ccourseID; // 강의 고유 번호 (학수번호)
+                        char ccourseUniversity; // 학부 혹은 대학원
+                        String ccourseYear; // 해당 년도
+                        String ccourseTerm; // 해당 학기
+                        String ccourseArea; // 개설 영역
+                        String ccourseMajor; // 해당 학과
+                        String ccourseGrade; // 해당학년
+                        String ccourseTitle; // 강의 제목
+                        String ccourseCredit; // 강의 학점
+                        String ccoursePersonnel; // 강의 제한 인원
+                        String ccourseProfessor; // 강의 교수
+                        String ccourseTimeRoom; // 강의 시간대
+                        String ccourseRoon; // 강의실
+
+
+                        for(int i = 1; i < elementsLecture.size(); i++)
+                        {
+                            elemList.clear();
+                            elementsAttrLecture = elementsLecture.get(i).select("td");
+
+                            for(Element e: elementsAttrLecture)
+                            {
+                                elemList.add(e.text()); // 16 Elements
+                            }
+                            Log.e("TAG", "elemList size값은 : " + elemList.size());
+                            Log.e("TAG", "elemList [0] 값은 : " + elemList.get(0));
+                            //Course testCourse = new Course("",'A',"2017","1","인문학","컴공","1","컴퓨터개론","3","20","김차성","목34 (0505)");
+
+                            ccourseID = elemList.get(3);
+                            ccourseUniversity = 'A';
+                            ccourseYear = "2017";
+                            ccourseTerm = "1";
+                            ccourseArea = elemList.get(1);
+                            ccourseMajor = "컴공";
+                            ccourseGrade = elemList.get(2);
+                            ccourseTitle = elemList.get(4).substring(0, elemList.get(4).indexOf('('));
+                            ccourseCredit = elemList.get(11);
+                            ccoursePersonnel = elemList.get(14).substring(elemList.get(14).indexOf('/')+2, elemList.get(14).length());
+                            if(elemList.get(10).contains("("))
+                            {
+                                ccourseProfessor = elemList.get(10).substring(0,elemList.get(10).indexOf('(')); // 한국인 교수일 경우
+                            }
+                            else
+                            {
+                                ccourseProfessor = elemList.get(10)+" "; // 외국인 교수일 경우
+
+                            }
+                            ccourseTimeRoom = elemList.get(13).substring(0, elemList.get(13).indexOf(')')+1);
+                            // for test
+                            Course course = new Course(ccourseID,ccourseUniversity,ccourseYear,ccourseTerm,ccourseArea,ccourseMajor,ccourseGrade,ccourseTitle,ccourseCredit,ccoursePersonnel,ccourseProfessor,ccourseTimeRoom);
+
+//                            Course course = new Course(elemList.get(3), paramOrgSect, paramYear, paramTerm, elemList.get(1), paramStudies, elemList.get(2), elemList.get(4).substring(0, elemList.get(4).indexOf('(')), elemList.get(11), elemList.get(14).substring(elemList.get(14).indexOf('/')+1, elemList.size()),
+//                                    elemList.get(10).substring(0, elemList.get(10).indexOf('(')), elemList.get(13).substring(0,elemList.get(13).indexOf('(')), elemList.get(13).substring(elemList.get(13).indexOf('('), elemList.get(13).indexOf(')')));
+                            //Course course = new Course(test,'A',"2017","1",test.substring(0,test.indexOf('(')),"컴공","1","컴퓨터개론","3","20","김차성","목34","0505");
+                            courseLIst.add(course);
+
+                        }
+                        Log.e("TAG", "courseList size값은 : " + courseLIst.size());
+                        Log.e("TAG", "case 2 끝남");
+                        break;
+                    }
+                    case 3:
+                    {
+//                        Log.e("TAG", "case 3 시작됨");
+//
+//                        // case 3은 검색 버튼을 누르고 강의정보를 파싱 : 교양 선택
+//                        // 리스트 초기화
+//                        courseLIst.clear();
+//
+//                        // tab_lang=K&type=&ag_ledg_year=2018&ag_ledg_sessn=1&ag_org_sect=A&campus_sect=H1&gubun=2&ag_compt_fld_cd=301_H1    ..교양선택시
+//                        String parameter = "?tab_lang=K"+"&type=&ag_ledg_year="+paramYear+"&ag_ledg_sessn="+paramTerm+"&ag_org_sect="+paramOrgSect+"&campus_sect="+paramCamSect+"&gubun="+paramGubun+"&ag_compt_fld_cd="+paramStudies;
+//                        String URL = "http://wis.hufs.ac.kr:8989/src08/jsp/lecture/LECTURE2020L.jsp";
+//                        Document sampleDoc = Jsoup.connect(URL+parameter).get();
+//
+//                        Elements elementsLecture = sampleDoc.select("[id=premier1]").select("tbody tr"); // 강의s 파싱
+//                        Elements elementsAttrLecture; // 강의의 세부 <td> 속성들 파싱
+//
+//                        //ArrayList<ArrayList<String>> elemList = new ArrayList<>();
+//                        ArrayList<String> elemList = new ArrayList<>();
+//
+//                        for(int i = 0; i < elementsLecture.size(); i++)
+//                        {
+//                            elemList.clear();
+//                            elementsAttrLecture = elementsLecture.get(i).select("td");
+//
+//                            for(Element e: elementsAttrLecture)
+//                            {
+//                                elemList.add(e.text()); // 16 Elements
+//                            }
+//
+//                            courseLIst.add(new Course(elemList.get(3), paramOrgSect, paramYear, paramTerm, elemList.get(1), paramStudies, elemList.get(2), elemList.get(4).substring(0, elemList.get(4).indexOf('(')), elemList.get(11), elemList.get(14).substring(elemList.get(14).indexOf('/')+1, elemList.size()),
+//                                    elemList.get(10).substring(0, elemList.get(10).indexOf('(')), elemList.get(13).substring(0,elemList.get(13).indexOf('(')), elemList.get(13).substring(elemList.get(13).indexOf('('), elemList.get(13).indexOf(')'))));
+//
+//                        }
+//                        Log.e("TAG", "case 3 끝남");
+                        break;
+                    }
+                }
+                Log.e("TAG", "BackgroundParseTask @ doInBackground finished");
+            } catch(Exception e){
+                e.printStackTrace();
+            }
+            return integers[0];
+        }
+
+        @Override
+        protected void onPostExecute(Integer integer) {
+            Log.e("TAG", "BackgroundParseTask @ onPostExecute started");
+
+            switch (integer){
+                case 1:
+                {
+                    // major 스피너 업데이트
+
+                    if(paramGubun == '1') // 전공과목에 체크되 있는 경우
+                    {
+                        studiesAdapter = new ArrayAdapter<String>(getActivity(), R.layout.support_simple_spinner_dropdown_item, majorList);
+                        studiesSpinner.setAdapter(studiesAdapter);
+                    }
+                    else if(paramGubun == '2') // 교양과목에 체크 되어있는 경우
+                    {
+                        studiesAdapter = new ArrayAdapter<String>(getActivity(), R.layout.support_simple_spinner_dropdown_item, notMajorList);
+                        studiesSpinner.setAdapter(studiesAdapter);
+                    }
+
+                    if(majorList.isEmpty())
+                    {
+                        Log.e("TAG", "나비었어요!");
+                        studiesSpinner.setEnabled(false); // 표시할 요소가 없으면 아예 비활성화한다.
+                    }
+                    else if(!majorList.isEmpty())
+                    {
+                        Log.e("TAG", "나 안비었어요!");
+                        studiesSpinner.setEnabled(true);
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    Log.e("TAG", "Post2에서 courseList size값은 : " + courseLIst.size());
+                    //  업데이트
+                    courseListAdapter.notifyDataSetChanged();
+                    break;
+                }
+                case 3:
+                {
+                    Log.e("TAG", "Post3에서 courseList size값은 : " + courseLIst.size());
+                    //  업데이트
+                    courseListAdapter.notifyDataSetChanged();
+                }
+                break;
+            }
+            cancel(true);
+            Log.e("TAG", "BackgroundParseTask @ onPostExecute finished");
+        }
     }
 }

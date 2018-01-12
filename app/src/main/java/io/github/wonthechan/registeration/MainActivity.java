@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
             finish();
             return;
         }
-        Toast.makeText(this, "'뒤로' 버튼을 한 번 더 눌러 종료합니다.", Toast.LENGTH_SHORT);
+        Toast.makeText(this, "'뒤로' 버튼을 한 번 더 눌러 종료합니다.", Toast.LENGTH_SHORT).show();
         lastTimeBackPressed = System.currentTimeMillis(); // 버튼을 처음 한번 눌렀을때의 시간을 저장
     }
 }

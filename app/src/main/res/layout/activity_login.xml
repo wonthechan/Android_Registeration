@@ -52,6 +52,7 @@
             android:orientation="vertical">
 
             <EditText
+                android:text="ppp"
                 android:layout_width="280dp"
                 android:layout_height="wrap_content"
                 android:hint="아이디"
@@ -66,6 +67,7 @@
                 android:background="@color/colorPrimary"/>
 
             <EditText
+                android:text="ppp"
                 android:inputType="textPassword"
                 android:layout_width="280dp"
                 android:layout_height="wrap_content"

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="major_seoul">
-        <item>CORE글로벌지역학</item>
         <item>EICC학과</item>
         <item>EU전공</item>
         <item>LD전공</item>
@@ -21,6 +20,7 @@
         <item>네덜란드어과</item>
         <item>노어과</item>
         <item>독일어과</item>
+        <item>독일어교육과</item>
         <item>동북아전공</item>
         <item>디지털인문한국학전공</item>
         <item>말레이.인도네시아어과</item>
@@ -54,10 +54,12 @@
         <item>일본언어문화학부</item>
         <item>정치외교학과</item>
         <item>중국어교육과</item>
+        <item>중국어학전공</item>
         <item>중국언어문화전공</item>
         <item>중국언어문화학부</item>
         <item>중국외교통상전공</item>
         <item>중국외교통상학부</item>
+        <item>중국지역학전공</item>
         <item>태국어과</item>
         <item>터키.아제르바이잔어과</item>
         <item>포르투갈어과</item>
@@ -140,17 +142,44 @@
         <item>2010년도</item>
         <item>2009년도</item>
         <item>2008년도</item>
+        <item>2007년도</item>
+        <item>2006년도</item>
+        <item>2005년도</item>
+        <item>2004년도</item>
+        <item>2003년도</item>
+        <item>2002년도</item>
+        <item>2001년도</item>
+        <item>2000년도</item>
+        <item>1999년도</item>
     </string-array>
-    <string-array name="term">
+
+    <string-array name="univTerm">
         <item>1학기</item>
         <item>여름학기</item>
         <item>2학기</item>
         <item>겨울학기</item>
     </string-array>
-    <string-array name="graduateArea">
-        <item>대학원 전공/부전공</item>
-        <item>실용외국어/교양과목</item>
+    <string-array name="gradTerm">
+        <item>1학기</item>
+        <item> </item>
+        <item>2학기</item>
+        <item> </item>
     </string-array>
+
+    <string-array name="affiliation">
+        <item>학부</item>
+        <item>대학원</item>
+        <item>통번역대학원</item>
+        <item>교육대학원</item>
+        <item>정치행정언론역대학원</item>
+        <item>국제지역대학원</item>
+        <item>경영대학원(주간)</item>
+        <item>경영대학원(야간)</item>
+        <item>법학전문대학원</item>
+        <item>TESOL대학원</item>
+        <item>TESOL전문교육원</item>
+    </string-array>
+
     <string-array name="universityArea">
         <item>전공/부전공</item>
         <item>실용외국어/교양과목</item>
