@@ -87,68 +87,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        new BackgroundTask().execute();
     }
-    // 서브클래스 작성
-    class BackgroundTask extends AsyncTask<Void, Void, String>
-    {
-        String target;
-
-        @Override
-        protected void onPreExecute(){
-            target = "http://211.252.53.222/NoticeList.php";
-        }
-
-        @Override
-        protected String doInBackground(Void... voids){
-            try {
-                URL url = new URL(target);
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection(); // 파싱
-                InputStream inputStream = httpURLConnection.getInputStream();
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                String temp;
-                StringBuilder stringBuilder = new StringBuilder();
-                while((temp = bufferedReader.readLine()) != null)
-                {
-                    stringBuilder.append(temp + "\n");
-                }
-                bufferedReader.close();
-                inputStream.close();
-                httpURLConnection.disconnect();
-                return stringBuilder.toString().trim();
-            } catch(Exception e){
-                e.printStackTrace();
-            }
-            return null;
-        }
-        @Override
-        public void onProgressUpdate(Void... values){
-            super.onProgressUpdate();
-        }
-        @Override
-        public void onPostExecute(String result){
-            try{
-                JSONObject jsonObject = new JSONObject(result);
-                JSONArray jsonArray = jsonObject.getJSONArray("response");
-                int count = 0;
-                String noticeContent, noticeName, noticeDate;
-                while(count < jsonArray.length())
-                {
-                    JSONObject object = jsonArray.getJSONObject(count);
-                    noticeContent = object.getString("noticeContent");
-                    noticeName = object.getString("noticeName");
-                    noticeDate= object.getString("noticeDate");
-                    Notice notice = new Notice(noticeContent, noticeName, noticeDate);
-                    noticeList.add(notice);
-                    count++;
-                }
-                noticeListView.setAdapter(adapter); // 어댑터에 들어가있는 모든 내용들이 각각의 view 형태로 리스트뷰에 보여진다.
-            } catch(Exception e){
-                e.printStackTrace();
-            }
-        }
-    }
-
     private long lastTimeBackPressed;
 
     @Override

@@ -85,7 +85,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="10dp"
             android:layout_gravity="center">
 
             <LinearLayout
@@ -94,7 +93,7 @@
                 android:orientation="vertical">
 
                 <RadioGroup
-                    android:layout_width="wrap_content"
+                    android:layout_width="256dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/studiesGroup"
                     android:layout_gravity="center_horizontal"
@@ -105,6 +104,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="4"
+                        android:textSize="12dp"
                         android:text="전공/부전공"
                         android:id="@+id/majorRButton"
                         />
@@ -113,6 +113,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="6"
+                        android:textSize="12dp"
                         android:text="실용외국어/교양과목"
                         android:id="@+id/cultRButton"
                         />
@@ -137,7 +138,7 @@
                 android:text="강의 검색"
                 android:layout_gravity="center"
                 android:id="@+id/searchButton"
-                android:layout_marginLeft="15dp"
+                android:layout_marginLeft="5dp"
                 android:gravity="center"/>
 
         </LinearLayout>

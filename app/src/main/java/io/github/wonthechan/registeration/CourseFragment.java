@@ -1,5 +1,6 @@
 package io.github.wonthechan.registeration;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -352,8 +353,16 @@ public class CourseFragment extends Fragment implements AdapterView.OnItemSelect
     // 서브클래스 작성
     class BackgroundParseTask extends AsyncTask<Integer, Integer, Integer>{
 
+        ProgressDialog asyncDialog = new ProgressDialog(getActivity());
+
         @Override
-        protected void onPreExecute() {
+        protected void onPreExecute()
+        {
+            asyncDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            asyncDialog.setMessage("로딩중");
+
+            // show dialog
+            asyncDialog.show();
             super.onPreExecute();
         }
 
@@ -409,11 +418,9 @@ public class CourseFragment extends Fragment implements AdapterView.OnItemSelect
                         Elements elementsLecture = sampleDoc.select("[id=premier1]").select("tbody tr"); // 강의s 파싱
                         Elements elementsAttrLecture; // 강의의 세부 <td> 속성들 파싱
                         Log.e("TAG", "3");
-                        //ArrayList<ArrayList<String>> elemList = new ArrayList<>();
+
                         ArrayList<String> elemList = new ArrayList<>();
                         Log.e("TAG", "4");
-                        Log.e("TAG", "elementsLecture size값은 : " + elementsLecture.size());
-
 
                         String ccourseID; // 강의 고유 번호 (학수번호)
                         char ccourseUniversity; // 학부 혹은 대학원
@@ -427,14 +434,11 @@ public class CourseFragment extends Fragment implements AdapterView.OnItemSelect
                         String ccoursePersonnel; // 강의 제한 인원
                         String ccourseProfessor; // 강의 교수
                         String ccourseTimeRoom; // 강의 시간대
-                        String ccourseRoon; // 강의실
-
 
                         for(int i = 1; i < elementsLecture.size(); i++)
                         {
                             elemList.clear();
                             elementsAttrLecture = elementsLecture.get(i).select("td");
-
                             for(Element e: elementsAttrLecture)
                             {
                                 elemList.add(e.text()); // 16 Elements
@@ -450,7 +454,7 @@ public class CourseFragment extends Fragment implements AdapterView.OnItemSelect
                             ccourseArea = elemList.get(1);
                             ccourseMajor = "컴공";
                             ccourseGrade = elemList.get(2);
-                            ccourseTitle = elemList.get(4).substring(0, elemList.get(4).indexOf('('));
+                            ccourseTitle = elemList.get(4).substring(0, elemList.get(4).lastIndexOf('('));
                             ccourseCredit = elemList.get(11);
                             ccoursePersonnel = elemList.get(14).substring(elemList.get(14).indexOf('/')+2, elemList.get(14).length());
                             if(elemList.get(10).contains("("))
@@ -466,11 +470,7 @@ public class CourseFragment extends Fragment implements AdapterView.OnItemSelect
                             // for test
                             Course course = new Course(ccourseID,ccourseUniversity,ccourseYear,ccourseTerm,ccourseArea,ccourseMajor,ccourseGrade,ccourseTitle,ccourseCredit,ccoursePersonnel,ccourseProfessor,ccourseTimeRoom);
 
-//                            Course course = new Course(elemList.get(3), paramOrgSect, paramYear, paramTerm, elemList.get(1), paramStudies, elemList.get(2), elemList.get(4).substring(0, elemList.get(4).indexOf('(')), elemList.get(11), elemList.get(14).substring(elemList.get(14).indexOf('/')+1, elemList.size()),
-//                                    elemList.get(10).substring(0, elemList.get(10).indexOf('(')), elemList.get(13).substring(0,elemList.get(13).indexOf('(')), elemList.get(13).substring(elemList.get(13).indexOf('('), elemList.get(13).indexOf(')')));
-                            //Course course = new Course(test,'A',"2017","1",test.substring(0,test.indexOf('(')),"컴공","1","컴퓨터개론","3","20","김차성","목34","0505");
                             courseLIst.add(course);
-
                         }
                         Log.e("TAG", "courseList size값은 : " + courseLIst.size());
                         Log.e("TAG", "case 2 끝남");
@@ -478,38 +478,74 @@ public class CourseFragment extends Fragment implements AdapterView.OnItemSelect
                     }
                     case 3:
                     {
-//                        Log.e("TAG", "case 3 시작됨");
-//
-//                        // case 3은 검색 버튼을 누르고 강의정보를 파싱 : 교양 선택
-//                        // 리스트 초기화
-//                        courseLIst.clear();
-//
-//                        // tab_lang=K&type=&ag_ledg_year=2018&ag_ledg_sessn=1&ag_org_sect=A&campus_sect=H1&gubun=2&ag_compt_fld_cd=301_H1    ..교양선택시
-//                        String parameter = "?tab_lang=K"+"&type=&ag_ledg_year="+paramYear+"&ag_ledg_sessn="+paramTerm+"&ag_org_sect="+paramOrgSect+"&campus_sect="+paramCamSect+"&gubun="+paramGubun+"&ag_compt_fld_cd="+paramStudies;
-//                        String URL = "http://wis.hufs.ac.kr:8989/src08/jsp/lecture/LECTURE2020L.jsp";
-//                        Document sampleDoc = Jsoup.connect(URL+parameter).get();
-//
-//                        Elements elementsLecture = sampleDoc.select("[id=premier1]").select("tbody tr"); // 강의s 파싱
-//                        Elements elementsAttrLecture; // 강의의 세부 <td> 속성들 파싱
-//
-//                        //ArrayList<ArrayList<String>> elemList = new ArrayList<>();
-//                        ArrayList<String> elemList = new ArrayList<>();
-//
-//                        for(int i = 0; i < elementsLecture.size(); i++)
-//                        {
-//                            elemList.clear();
-//                            elementsAttrLecture = elementsLecture.get(i).select("td");
-//
-//                            for(Element e: elementsAttrLecture)
-//                            {
-//                                elemList.add(e.text()); // 16 Elements
-//                            }
-//
-//                            courseLIst.add(new Course(elemList.get(3), paramOrgSect, paramYear, paramTerm, elemList.get(1), paramStudies, elemList.get(2), elemList.get(4).substring(0, elemList.get(4).indexOf('(')), elemList.get(11), elemList.get(14).substring(elemList.get(14).indexOf('/')+1, elemList.size()),
-//                                    elemList.get(10).substring(0, elemList.get(10).indexOf('(')), elemList.get(13).substring(0,elemList.get(13).indexOf('(')), elemList.get(13).substring(elemList.get(13).indexOf('('), elemList.get(13).indexOf(')'))));
-//
-//                        }
-//                        Log.e("TAG", "case 3 끝남");
+                        Log.e("TAG", "case 3 시작됨");
+
+                        // case 3은 검색 버튼을 누르고 강의정보를 파싱 : 교양 선택
+                        // 리스트 초기화
+                        courseLIst.clear();
+                        Log.e("TAG","ag_compt_fld_cd : " + paramStudies);
+                        // tab_lang=K&type=&ag_ledg_year=2018&ag_ledg_sessn=1&ag_org_sect=A&campus_sect=H1&gubun=2&ag_compt_fld_cd=301_H1    ..교양선택시
+                        String parameter = "?tab_lang=K"+"&type=&ag_ledg_year="+paramYear+"&ag_ledg_sessn="+paramTerm+"&ag_org_sect="+paramOrgSect+"&campus_sect="+paramCamSect+"&gubun="+paramGubun+"&ag_compt_fld_cd="+paramStudies;
+                        String URL = "http://wis.hufs.ac.kr:8989/src08/jsp/lecture/LECTURE2020L.jsp";
+                        Document sampleDoc = Jsoup.connect(URL+parameter).get();
+
+                        Elements elementsLecture = sampleDoc.select("[id=premier1]").select("tbody tr"); // 강의s 파싱
+                        Elements elementsAttrLecture; // 강의의 세부 <td> 속성들 파싱
+                        Log.e("TAG","elementsLecture size : " + elementsLecture.size());
+                        //ArrayList<ArrayList<String>> elemList = new ArrayList<>();
+                        ArrayList<String> elemList = new ArrayList<>();
+
+                        String ccourseID; // 강의 고유 번호 (학수번호)
+                        char ccourseUniversity; // 학부 혹은 대학원
+                        String ccourseYear; // 해당 년도
+                        String ccourseTerm; // 해당 학기
+                        String ccourseArea; // 개설 영역
+                        String ccourseMajor; // 해당 학과
+                        String ccourseGrade; // 해당학년
+                        String ccourseTitle; // 강의 제목
+                        String ccourseCredit; // 강의 학점
+                        String ccoursePersonnel; // 강의 제한 인원
+                        String ccourseProfessor; // 강의 교수
+                        String ccourseTimeRoom; // 강의 시간대
+
+                        for(int i = 1; i < elementsLecture.size(); i++)
+                        {
+                            elemList.clear();
+                            elementsAttrLecture = elementsLecture.get(i).select("td");
+                            for(Element e: elementsAttrLecture)
+                            {
+                                elemList.add(e.text()); // 16 Elements
+                            }
+                            Log.e("TAG", "elemList size값은 : " + elemList.size());
+                            Log.e("TAG", "elemList [0] 값은 : " + elemList.get(0));
+                            //Course testCourse = new Course("",'A',"2017","1","인문학","컴공","1","컴퓨터개론","3","20","김차성","목34 (0505)");
+
+                            ccourseID = elemList.get(3);
+                            ccourseUniversity = 'A';
+                            ccourseYear = "2017";
+                            ccourseTerm = "1";
+                            ccourseArea = elemList.get(1);
+                            ccourseMajor = "컴공";
+                            ccourseGrade = elemList.get(2);
+                            ccourseTitle = elemList.get(4).substring(0, elemList.get(4).lastIndexOf('('));
+                            ccourseCredit = elemList.get(11);
+                            ccoursePersonnel = elemList.get(14).substring(elemList.get(14).indexOf('/')+2, elemList.get(14).length());
+                            if(elemList.get(10).contains("("))
+                            {
+                                ccourseProfessor = elemList.get(10).substring(0,elemList.get(10).indexOf('(')); // 한국인 교수일 경우
+                            }
+                            else
+                            {
+                                ccourseProfessor = elemList.get(10)+" "; // 외국인 교수일 경우
+
+                            }
+                            ccourseTimeRoom = elemList.get(13).substring(0, elemList.get(13).indexOf(')')+1);
+                            // for test
+                            Course course = new Course(ccourseID,ccourseUniversity,ccourseYear,ccourseTerm,ccourseArea,ccourseMajor,ccourseGrade,ccourseTitle,ccourseCredit,ccoursePersonnel,ccourseProfessor,ccourseTimeRoom);
+
+                            courseLIst.add(course);
+                        }
+                        Log.e("TAG", "case 3 끝남");
                         break;
                     }
                 }
@@ -567,8 +603,9 @@ public class CourseFragment extends Fragment implements AdapterView.OnItemSelect
                 }
                 break;
             }
-            cancel(true);
             Log.e("TAG", "BackgroundParseTask @ onPostExecute finished");
+            asyncDialog.dismiss();
+            cancel(true);
         }
     }
 }
