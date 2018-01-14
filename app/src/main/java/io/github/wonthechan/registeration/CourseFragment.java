@@ -1,5 +1,6 @@
 package io.github.wonthechan.registeration;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.net.Uri;
@@ -79,6 +80,7 @@ public class CourseFragment extends Fragment implements AdapterView.OnItemSelect
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
+
 
     private ArrayAdapter yearAdapter;
     private Spinner yearSpinner;
@@ -353,13 +355,13 @@ public class CourseFragment extends Fragment implements AdapterView.OnItemSelect
     // 서브클래스 작성
     class BackgroundParseTask extends AsyncTask<Integer, Integer, Integer>{
 
-        ProgressDialog asyncDialog = new ProgressDialog(getActivity());
+        ProgressDialog asyncDialog = new ProgressDialog(getActivity(), AlertDialog.THEME_HOLO_LIGHT);
 
         @Override
         protected void onPreExecute()
         {
             asyncDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            asyncDialog.setMessage("로딩중");
+            asyncDialog.setMessage("잠시만 기다리세요...");
 
             // show dialog
             asyncDialog.show();
