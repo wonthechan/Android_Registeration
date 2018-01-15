@@ -421,17 +421,11 @@ public class CourseFragment extends Fragment implements AdapterView.OnItemSelect
                         Elements elementsAttrLecture; // 강의의 세부 <td> 속성들 파싱
                         Log.e("TAG", "3");
 
-                        ArrayList<String> elemList = new ArrayList<>();
-                        Log.e("TAG", "4");
-
                         String ccourseID; // 강의 고유 번호 (학수번호)
-                        char ccourseUniversity; // 학부 혹은 대학원
-                        String ccourseYear; // 해당 년도
-                        String ccourseTerm; // 해당 학기
                         String ccourseArea; // 개설 영역
-                        String ccourseMajor; // 해당 학과
                         String ccourseGrade; // 해당학년
                         String ccourseTitle; // 강의 제목
+                        String ccourseTitleEnglish; // 강의 영어 제목
                         String ccourseCredit; // 강의 학점
                         String ccoursePersonnel; // 강의 제한 인원
                         String ccourseProfessor; // 강의 교수
@@ -439,38 +433,41 @@ public class CourseFragment extends Fragment implements AdapterView.OnItemSelect
 
                         for(int i = 1; i < elementsLecture.size(); i++)
                         {
-                            elemList.clear();
                             elementsAttrLecture = elementsLecture.get(i).select("td");
-                            for(Element e: elementsAttrLecture)
-                            {
-                                elemList.add(e.text()); // 16 Elements
-                            }
-                            Log.e("TAG", "elemList size값은 : " + elemList.size());
-                            Log.e("TAG", "elemList [0] 값은 : " + elemList.get(0));
-                            //Course testCourse = new Course("",'A',"2017","1","인문학","컴공","1","컴퓨터개론","3","20","김차성","목34 (0505)");
 
-                            ccourseID = elemList.get(3);
-                            ccourseUniversity = 'A';
-                            ccourseYear = "2017";
-                            ccourseTerm = "1";
-                            ccourseArea = elemList.get(1);
-                            ccourseMajor = "컴공";
-                            ccourseGrade = elemList.get(2);
-                            ccourseTitle = elemList.get(4).substring(0, elemList.get(4).lastIndexOf('('));
-                            ccourseCredit = elemList.get(11);
-                            ccoursePersonnel = elemList.get(14).substring(elemList.get(14).indexOf('/')+2, elemList.get(14).length());
-                            if(elemList.get(10).contains("("))
+                            ccourseID = elementsAttrLecture.get(3).text();
+                            ccourseArea = elementsAttrLecture.get(1).text();
+                            ccourseGrade = elementsAttrLecture.get(2).text();
+                            // ccourseTitle = elementsAttrLecture.get(4).text().substring(0, elementsAttrLecture.get(4).text().lastIndexOf('('));
+
+                            ccourseTitle = elementsAttrLecture.get(4).select(".txt_navy").toString();
+                            // gray8을 포함한다는것은 강의의 영어제목이 따로 있는것.
+                            if(ccourseTitle.contains("gray8"))
                             {
-                                ccourseProfessor = elemList.get(10).substring(0,elemList.get(10).indexOf('(')); // 한국인 교수일 경우
+                                ccourseTitleEnglish = elementsAttrLecture.get(4).select(".txt_gray8").text();
                             }
                             else
                             {
-                                ccourseProfessor = elemList.get(10)+" "; // 외국인 교수일 경우
+                                // 영어제목이 따로 없다면 그냥 빈값을 넘겨준다
+                                ccourseTitleEnglish =  "";
+                            }
+
+                            ccourseTitle = ccourseTitle.substring(ccourseTitle.indexOf('>')+1, ccourseTitle.indexOf("<br>"));
+
+                            ccourseCredit = elementsAttrLecture.get(11).text();
+                            ccoursePersonnel = elementsAttrLecture.get(14).text().substring(elementsAttrLecture.get(14).text().indexOf('/')+2, elementsAttrLecture.get(14).text().length());
+                            if(elementsAttrLecture.get(10).text().contains("("))
+                            {
+                                ccourseProfessor = elementsAttrLecture.get(10).text().substring(0,elementsAttrLecture.get(10).text().indexOf('(')); // 한국인 교수일 경우
+                            }
+                            else
+                            {
+                                ccourseProfessor = elementsAttrLecture.get(10).text()+" "; // 외국인 교수일 경우
 
                             }
-                            ccourseTimeRoom = elemList.get(13).substring(0, elemList.get(13).indexOf(')')+1);
+                            ccourseTimeRoom = elementsAttrLecture.get(13).text().substring(0, elementsAttrLecture.get(13).text().indexOf(')')+1);
                             // for test
-                            Course course = new Course(ccourseID,ccourseUniversity,ccourseYear,ccourseTerm,ccourseArea,ccourseMajor,ccourseGrade,ccourseTitle,ccourseCredit,ccoursePersonnel,ccourseProfessor,ccourseTimeRoom);
+                            Course course = new Course(ccourseID,ccourseArea,ccourseGrade,ccourseTitle,ccourseTitleEnglish,ccourseCredit,ccoursePersonnel,ccourseProfessor,ccourseTimeRoom);
 
                             courseLIst.add(course);
                         }
@@ -494,17 +491,12 @@ public class CourseFragment extends Fragment implements AdapterView.OnItemSelect
                         Elements elementsLecture = sampleDoc.select("[id=premier1]").select("tbody tr"); // 강의s 파싱
                         Elements elementsAttrLecture; // 강의의 세부 <td> 속성들 파싱
                         Log.e("TAG","elementsLecture size : " + elementsLecture.size());
-                        //ArrayList<ArrayList<String>> elemList = new ArrayList<>();
-                        ArrayList<String> elemList = new ArrayList<>();
 
                         String ccourseID; // 강의 고유 번호 (학수번호)
-                        char ccourseUniversity; // 학부 혹은 대학원
-                        String ccourseYear; // 해당 년도
-                        String ccourseTerm; // 해당 학기
                         String ccourseArea; // 개설 영역
-                        String ccourseMajor; // 해당 학과
                         String ccourseGrade; // 해당학년
                         String ccourseTitle; // 강의 제목
+                        String ccourseTitleEnglish; // 강의 영어 제목
                         String ccourseCredit; // 강의 학점
                         String ccoursePersonnel; // 강의 제한 인원
                         String ccourseProfessor; // 강의 교수
@@ -512,38 +504,41 @@ public class CourseFragment extends Fragment implements AdapterView.OnItemSelect
 
                         for(int i = 1; i < elementsLecture.size(); i++)
                         {
-                            elemList.clear();
                             elementsAttrLecture = elementsLecture.get(i).select("td");
-                            for(Element e: elementsAttrLecture)
-                            {
-                                elemList.add(e.text()); // 16 Elements
-                            }
-                            Log.e("TAG", "elemList size값은 : " + elemList.size());
-                            Log.e("TAG", "elemList [0] 값은 : " + elemList.get(0));
-                            //Course testCourse = new Course("",'A',"2017","1","인문학","컴공","1","컴퓨터개론","3","20","김차성","목34 (0505)");
 
-                            ccourseID = elemList.get(3);
-                            ccourseUniversity = 'A';
-                            ccourseYear = "2017";
-                            ccourseTerm = "1";
-                            ccourseArea = elemList.get(1);
-                            ccourseMajor = "컴공";
-                            ccourseGrade = elemList.get(2);
-                            ccourseTitle = elemList.get(4).substring(0, elemList.get(4).lastIndexOf('('));
-                            ccourseCredit = elemList.get(11);
-                            ccoursePersonnel = elemList.get(14).substring(elemList.get(14).indexOf('/')+2, elemList.get(14).length());
-                            if(elemList.get(10).contains("("))
+                            ccourseID = elementsAttrLecture.get(3).text();
+                            ccourseArea = elementsAttrLecture.get(1).text();
+                            ccourseGrade = elementsAttrLecture.get(2).text();
+                            // ccourseTitle = elementsAttrLecture.get(4).text().substring(0, elementsAttrLecture.get(4).text().lastIndexOf('('));
+
+                            ccourseTitle = elementsAttrLecture.get(4).select(".txt_navy").toString();
+                            // gray8을 포함한다는것은 강의의 영어제목이 따로 있는것.
+                            if(ccourseTitle.contains("gray8"))
                             {
-                                ccourseProfessor = elemList.get(10).substring(0,elemList.get(10).indexOf('(')); // 한국인 교수일 경우
+                                ccourseTitleEnglish = elementsAttrLecture.get(4).select(".txt_gray8").text();
                             }
                             else
                             {
-                                ccourseProfessor = elemList.get(10)+" "; // 외국인 교수일 경우
+                                // 영어제목이 따로 없다면 그냥 빈값을 넘겨준다
+                                ccourseTitleEnglish =  "";
+                            }
+
+                            ccourseTitle = ccourseTitle.substring(ccourseTitle.indexOf('>')+1, ccourseTitle.indexOf("<br>"));
+
+                            ccourseCredit = elementsAttrLecture.get(11).text();
+                            ccoursePersonnel = elementsAttrLecture.get(14).text().substring(elementsAttrLecture.get(14).text().indexOf('/')+2, elementsAttrLecture.get(14).text().length());
+                            if(elementsAttrLecture.get(10).text().contains("("))
+                            {
+                                ccourseProfessor = elementsAttrLecture.get(10).text().substring(0,elementsAttrLecture.get(10).text().indexOf('(')); // 한국인 교수일 경우
+                            }
+                            else
+                            {
+                                ccourseProfessor = elementsAttrLecture.get(10).text()+" "; // 외국인 교수일 경우
 
                             }
-                            ccourseTimeRoom = elemList.get(13).substring(0, elemList.get(13).indexOf(')')+1);
+                            ccourseTimeRoom = elementsAttrLecture.get(13).text().substring(0, elementsAttrLecture.get(13).text().indexOf(')')+1);
                             // for test
-                            Course course = new Course(ccourseID,ccourseUniversity,ccourseYear,ccourseTerm,ccourseArea,ccourseMajor,ccourseGrade,ccourseTitle,ccourseCredit,ccoursePersonnel,ccourseProfessor,ccourseTimeRoom);
+                            Course course = new Course(ccourseID,ccourseArea,ccourseGrade,ccourseTitle,ccourseTitleEnglish,ccourseCredit,ccoursePersonnel,ccourseProfessor,ccourseTimeRoom);
 
                             courseLIst.add(course);
                         }

@@ -54,6 +54,23 @@
                 android:textColor="@color/colorGray" />
             
         </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="강의영어제목"
+                android:id="@+id/courseTitleEnglish"
+                android:layout_gravity="center"
+                android:textSize="14dp"
+                android:padding="3dp"
+                android:textColor="@color/colorGray"/>
+
+        </LinearLayout>
         
         <LinearLayout
             android:layout_width="match_parent"
@@ -102,13 +119,13 @@
                 android:textColor="#f92a3f"/>
 
             <TextView
+                android:id="@+id/courseTimeRoom"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="강의 시간대"
-                android:id="@+id/courseTime"
                 android:layout_gravity="center"
                 android:padding="3dp"
-                android:textColor="@color/colorGray"/>
+                android:text="강의시간과강의실"
+                android:textColor="@color/colorGray" />
 
             <TextView
                 android:layout_width="wrap_content"

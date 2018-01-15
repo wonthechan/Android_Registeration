@@ -43,15 +43,25 @@ public class CourseListAdapter extends BaseAdapter{
         View v = View.inflate(context, R.layout.course, null);
         TextView courseGrade = (TextView) v.findViewById(R.id.courseGrade);
         TextView courseTitle = (TextView) v.findViewById(R.id.courseTitle);
+        TextView courseTitleEnglish = (TextView) v.findViewById(R.id.courseTitleEnglish);
         TextView courseCredit = (TextView) v.findViewById(R.id.courseCredit);
         TextView courseArea = (TextView) v.findViewById(R.id.courseArea);
         TextView coursePersonnel = (TextView) v.findViewById(R.id.coursePersonnel);
         TextView courseProfessor = (TextView) v.findViewById(R.id.courseProfessor);
-        TextView courseTime = (TextView) v.findViewById(R.id.courseTime);
+        TextView courseTimeRoom = (TextView) v.findViewById(R.id.courseTimeRoom);
 
 
         courseGrade.setText(courseList.get(i).getCourseGrade() + "학년");
         courseTitle.setText(courseList.get(i).getCourseTitle());
+        if(courseList.get(i).getCourseTitleEnglish().equals(""))
+        {
+            // 영어이름값이 없는경우 그냥 한글이름과 같게 set 한다
+            courseTitleEnglish.setText(courseList.get(i).getCourseTitle());
+        }
+        else
+        {
+            courseTitleEnglish.setText(courseList.get(i).getCourseTitleEnglish().substring(1, courseList.get(i).getCourseTitleEnglish().lastIndexOf(')')));
+        }
         courseCredit.setText(courseList.get(i).getCourseCredit() + "학점");
         courseArea.setText(courseList.get(i).getCourseArea());
 
@@ -64,7 +74,7 @@ public class CourseListAdapter extends BaseAdapter{
             coursePersonnel.setText("제한인원 : " + courseList.get(i).getCoursePersonnel() + "명");
         }
         courseProfessor.setText(courseList.get(i).getCourseProfessor() + "교수님");
-        courseTime.setText(courseList.get(i).getCourseTime() + "");
+        courseTimeRoom.setText(courseList.get(i).getCourseTimeRoom() + "");
 
         v.setTag(courseList.get(i).getCourseID());
         return v;
